@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Board">
+	<!-- 
+		파라미터로 받은 값에 접근할 때 #{}, ${}로 사용한다.
+		1. #{}
+			받아온 파라미터의 타입에 상관없이 String 타입으로 변경된다.
+			사용자가 직접 입력한 값에 사용하는 것이 좋다(보안에 유리하다)
+		2. ${}
+			받아온 파라미터의 타입을 그래도 유지한다.
+			사용자가 직접 입력한 값을 전달받을 때에는 사용하지 않는 것이 좋다(쿼리 주입 보안에 취약하다)
+			테이블이나 컬럼명을 파라미터로 받을 때에 사용한다 (#{}은 자동으로 따옴표가 붙기 때문)
+	 -->
+	 <!-- 
+	 		ROWNUM은 무조건 1부터 시작하기때문에 다시 서브쿼리로 감싸야한다.
+	 		그래서 SELECT * FROM로 묶어서 조건에 맞는 만큼의 행을 가지고 온다 
+	 		${startRow} AND ${endRow}
+	 		예) 1 ~ 10, 41 ~ 50 		
+	  -->
+	<select id="listAll" parameterType="map" resultType="BoardVO">
+		SELECT * FROM
+			(SELECT ROWNUM R, D.* FROM
+				(SELECT * FROM BOARD B ORDER BY BOARD_NUM DESC) D) B
+					WHERE B.R BETWEEN ${startRow} AND ${endRow}
+	</select>
+	
+	<!-- 전체 게시글 개수를 가져오는 쿼리문 -->
+	<select id="boardCnt" resultType="_int">
+		SELECT COUNT(*) FROM BOARD
+	</select>
+	
+	<select id="getSeq" resultType="_int">
+		SELECT BOARD_SEQ.CURRVAL FROM DUAL
+	</select>
+	
+	<select id="getDetail" parameterType="_int" resultType="BoardVO">
+		SELECT * FROM BOARD WHERE BOARD_NUM = ${board_num}
+	</select>
+	
+	<insert id="insertBoard" parameterType="BoardVO">
+		INSERT INTO BOARD VALUES(BOARD_SEQ.NEXTVAL, #{board_title}, #{board_contents}, #{board_id}, SYSDATE, 0)
+	</insert>
+	
+	<update id="updateReadCount" parameterType="map">
+		UPDATE BOARD SET READCOUNT = #{readcount} WHERE BOARD_NUM = #{board_num}
+		<!-- UPDATE BOARD SET READCOUNT = READCOUNT + 1 WHERE BOARD_NUM = #{board_num} -->
+	</update>
+	
+	<update id="updateBoard" parameterType="BoardVO">
+		UPDATE BOARD SET BOARD_TITLE = #{board_title}, BOARD_CONTENTS = #{board_contents}
+		WHERE BOARD_NUM = ${board_num}
+	</update>
+	
+	<delete id="deleteBoard" parameterType="_int">
+		DELETE FROM BOARD WHERE BOARD_NUM = ${board_num}
+	</delete>
+	
+	
+	<!-- 댓글 쿼리문 -->
+	
+	<select id="getReply" parameterType="_int" resultType="BoardReplyVO">
+		SELECT * FROM BOARD_REPLY WHERE BOARD_NUM = ${board_num} ORDER BY REPLY_NUM DESC
+	</select>
+	
+	<insert id="insertReply" parameterType="BoardReplyVO">
+		INSERT INTO BOARD_REPLY VALUES(REPLY_SEQ.NEXTVAL, ${board_num}, #{member_id}, #{reply_contents})
+	</insert>
+
+	<update id="updateReply" parameterType="map">
+		UPDATE BOARD_REPLY SET REPLY_CONTENTS = #{reply_contents} WHERE REPLY_NUM = ${reply_num}
+	</update>
+	
+	<delete id="deleteReply" parameterType="_int">
+		DELETE FROM BOARD_REPLY WHERE REPLY_NUM = ${reply_num}
+	</delete>
+	
+	<delete id="deleteAllReplies" parameterType="_int">
+		DELETE FROM BOARD_REPLY WHERE BOARD_NUM = ${board_num}
+	</delete>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

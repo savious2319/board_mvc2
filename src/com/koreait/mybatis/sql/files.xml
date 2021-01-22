@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Files">
+	<select id="getDetail" parameterType="_int" resultType="FilesVO">
+		SELECT * FROM FILES WHERE BOARD_NUM = ${board_num}
+	</select>
+
+	<insert id="insertFile" parameterType="map">
+		INSERT INTO FILES VALUES(#{file_name}, ${board_num})
+	</insert>
+	
+	<delete id="deleteFile" parameterType="_int">
+		DELETE FROM FILES WHERE BOARD_NUM = ${board_num}
+	</delete>
+</mapper>
